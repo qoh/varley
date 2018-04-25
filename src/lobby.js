@@ -12,29 +12,29 @@ const Lobby = class Lobby {
     this.waitTime = 0
 
     setInterval(() => {
-      if(!this.waiting)
+      if (!this.waiting)
         return
 
       this.waitTime++
-      if((this.clients.length >= minPlayers && this.waitTime > maxTime) ||
-         (this.clients.length >= maxPlayers && this.waitTime > minTime)) {
-           this.waitTime = 0
-           let newGame = this.newGameFunction()
-           newGame.start()
-           this.games.push(newGame)
+      if ((this.clients.length >= minPlayers && this.waitTime > maxTime) ||
+        (this.clients.length >= maxPlayers && this.waitTime > minTime)) {
+        this.waitTime = 0
+        let newGame = this.newGameFunction()
+        newGame.start()
+        this.games.push(newGame)
 
-           let playerCount = Math.min(maxPlayers, this.clients.length)
-           for(let i = 0; i < playerCount; ++i) {
-             let ws = this.clients[0]
-             newGame.connect(ws)
-             this.clients.splice(0, 1)
-             this._wsToGame[ws.id] = newGame
-           }
-           this.waiting = false
-           this.waitTime = 0
-           console.log('' + newGame.id +
-            '> Began new game with ' + newGame.players.length + ' players!')
-         }
+        let playerCount = Math.min(maxPlayers, this.clients.length)
+        for (let i = 0; i < playerCount; ++i) {
+          let ws = this.clients[0]
+          newGame.connect(ws)
+          this.clients.splice(0, 1)
+          this._wsToGame[ws.id] = newGame
+        }
+        this.waiting = false
+        this.waitTime = 0
+        console.log('' + newGame.id +
+          '> Began new game with ' + newGame.players.length + ' players!')
+      }
       this._updateClients()
     }, 1000)
   }
@@ -42,10 +42,10 @@ const Lobby = class Lobby {
   connect(ws) {
     this.clients.push(ws)
 
-    if(this.clients.length >= this.minPlayers)
+    if (this.clients.length >= this.minPlayers)
       this.waiting = true
 
-    if(this.clients.length <= this.maxPlayers)
+    if (this.clients.length <= this.maxPlayers)
       this.waitTime = Math.max(0, this.waitTime - this.minTime)
 
     this._updateClients()
@@ -54,25 +54,25 @@ const Lobby = class Lobby {
   disconnect(ws) {
     let index = this.clients.indexOf(ws)
 
-    if(index > -1)
+    if (index > -1)
       this.clients.splice(index, 1)
 
-    if(this.clients.length < this.minPlayers) {
+    if (this.clients.length < this.minPlayers) {
       this.waiting = false
       this.waitTime = 0
     }
 
     let game = this._wsToGame[ws.id]
 
-    if(game !== undefined) {
-        game.disconnect(ws)
+    if (game !== undefined) {
+      game.disconnect(ws)
 
-        if(game.players.length === 0) {
-          console.log('' + game.id + '< Ended game')
-          let gameIndex = this.games.indexOf(game)
-          if(gameIndex > -1)
-            this.games.splice(gameIndex, 1)
-        }
+      if (game.players.length === 0) {
+        console.log('' + game.id + '< Ended game')
+        let gameIndex = this.games.indexOf(game)
+        if (gameIndex > -1)
+          this.games.splice(gameIndex, 1)
+      }
     }
 
     this._updateClients()
@@ -85,16 +85,16 @@ const Lobby = class Lobby {
   message(ws, msg) {
     let game = this._wsToGame[ws.id]
 
-    if(game === undefined)
+    if (game === undefined)
       return
 
     game.message(ws, msg)
   }
 
   timeRemaining() {
-    if(this.clients.length >= this.maxPlayers)
+    if (this.clients.length >= this.maxPlayers)
       return '' + Math.ceil(this.minTime - this.waitTime) + 's'
-    else if(this.clients.length >= this.minPlayers)
+    else if (this.clients.length >= this.minPlayers)
       return '' + Math.ceil(this.maxTime - this.waitTime) + 's'
     else
       return 'waiting for more players...'
